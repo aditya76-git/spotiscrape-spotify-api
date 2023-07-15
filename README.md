@@ -338,7 +338,7 @@ Retrieves User's details
 
 ## Try It Out
 
-- Copyright © 2023 - [SpotiScrape]([https://rapidapi.com/user/conan7612](https://rapidapi.com/conan7612/api/spotiscrape))
+- [SpotiScrape](https://rapidapi.com/conan7612/api/spotiscrape)
 
 ## Authors
 
