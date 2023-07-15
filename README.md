@@ -2,7 +2,11 @@
 ![Logo](https://i.imgur.com/qtyX2iLh.png)
 
 # SpotiScrape - Unofficial Spotify API on RAPIDAPI
-Our API offers a wide range of functionalities to enhance your Spotify experience. Whether you're building a music application or seeking advanced features as a music enthusiast, our API has everything you need.
+- Unlock Spotify Music Database and seamlessly access and extract music data from Spotify’s vast catalog with SpotiScrape, the ultimate API for developers and music enthusiasts.
+
+- Our API provides a wide range of functionalities to enhance your Spotify experience. Whether you’re a developer building a music application or a music enthusiast looking for advanced features, our API has you covered.
+
+
 
 
 ## Details
