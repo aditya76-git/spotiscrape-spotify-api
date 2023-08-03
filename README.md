@@ -5,7 +5,7 @@
 - Unlock Spotify Music Database and seamlessly access and extract music data from Spotify’s vast catalog with SpotiScrape, the ultimate API for developers and music enthusiasts.
 
 - Our API provides a wide range of functionalities to enhance your Spotify experience. Whether you’re a developer building a music application or a music enthusiast looking for advanced features, our API has you covered.
-
+mm
 
 
 
@@ -80,7 +80,7 @@ POST /add-artist-to-library
 
 | Parameter | Type | Description | Help |
 | :-------- | :--- | :---------- | :--- |
-| `sp_dc` | `string` | **Required**. Spotify sp_dc cookie value. | Grab sp_dc cookie value from https://te.legra.ph/How-to-get-Spotify-sp-dc-cookie-07-11 |1
+| `sp_dc` | `string` | **Required**. Spotify sp_dc cookie value. | Grab sp_dc cookie value from https://graph.org/How-to-get-Spotify-sp-dc-cookie-07-11 |1
 | `artistID` | `string` | **Required**. trackID of a spotify song |  |
 
 Adds artist to your library i.e. follow a artist on Spotify
@@ -93,7 +93,7 @@ POST /remove-artist-from-library
 
 | Parameter | Type | Description | Help |
 | :-------- | :--- | :---------- | :--- |
-| `sp_dc` | `string` | **Required**. Spotify sp_dc cookie value. | Grab sp_dc cookie value from https://te.legra.ph/How-to-get-Spotify-sp-dc-cookie-07-11 |1
+| `sp_dc` | `string` | **Required**. Spotify sp_dc cookie value. | Grab sp_dc cookie value from https://graph.org/How-to-get-Spotify-sp-dc-cookie-07-11 |1
 | `artistID` | `string` | **Required**. trackID of a spotify song |  |
 
 Removes artist from your library i.e. unfollow a artist on Spotify
@@ -209,7 +209,7 @@ POST /get-lyrics
 
 | Parameter | Type | Description | Help |
 | :-------- | :--- | :---------- | :--- |
-| `sp_dc` | `string` | **Required**. Spotify sp_dc cookie value. | Grab sp_dc cookie value from https://te.legra.ph/How-to-get-Spotify-sp-dc-cookie-07-11 |1
+| `sp_dc` | `string` | **Required**. Spotify sp_dc cookie value. | Grab sp_dc cookie value from https://graph.org/How-to-get-Spotify-sp-dc-cookie-07-11 |1
 | `trackID` | `string` | **Required**. trackID of a spotify song |  |
 
 Retrieves Lyrics data based on the trackID
@@ -222,7 +222,7 @@ POST /get-liked-songs
 
 | Parameter | Type | Description | Help |
 | :-------- | :--- | :---------- | :--- |
-| `sp_dc` | `string` | **Required**. Spotify sp_dc cookie value. | Grab sp_dc cookie value from https://te.legra.ph/How-to-get-Spotify-sp-dc-cookie-07-11 |1
+| `sp_dc` | `string` | **Required**. Spotify sp_dc cookie value. | Grab sp_dc cookie value from https://graph.org/How-to-get-Spotify-sp-dc-cookie-07-11 |1
 | `limit` | `string` | **Optional**. Limit value of results, default value is 25 |  |
 | `offset` | `string` | **Optional**. Offset value of result, default value is 0 |  |
 
@@ -236,7 +236,7 @@ POST /get-top-artists
 
 | Parameter | Type | Description | Help |
 | :-------- | :--- | :---------- | :--- |
-| `sp_dc` | `string` | **Required**. Spotify sp_dc cookie value. | Grab sp_dc cookie value from https://te.legra.ph/How-to-get-Spotify-sp-dc-cookie-07-11 |1
+| `sp_dc` | `string` | **Required**. Spotify sp_dc cookie value. | Grab sp_dc cookie value from https://graph.org/How-to-get-Spotify-sp-dc-cookie-07-11 |1
 | `limit` | `string` | **Optional**. Limit value of results, default value is 25 |  |
 | `offset` | `string` | **Optional**. Offset value of result, default value is 0 |  |
 
@@ -250,7 +250,7 @@ POST /get-top-tracks
 
 | Parameter | Type | Description | Help |
 | :-------- | :--- | :---------- | :--- |
-| `sp_dc` | `string` | **Required**. Spotify sp_dc cookie value. | Grab sp_dc cookie value from https://te.legra.ph/How-to-get-Spotify-sp-dc-cookie-07-11 |1
+| `sp_dc` | `string` | **Required**. Spotify sp_dc cookie value. | Grab sp_dc cookie value from https://graph.org/How-to-get-Spotify-sp-dc-cookie-07-11 |1
 | `limit` | `string` | **Optional**. Limit value of results, default value is 25 |  |
 | `offset` | `string` | **Optional**. Offset value of result, default value is 0 |  |
 
@@ -304,7 +304,7 @@ POST /get-recently-played-songs
 
 | Parameter | Type | Description | Help |
 | :-------- | :--- | :---------- | :--- |
-| `sp_dc` | `string` | **Required**. Spotify sp_dc cookie value. | Grab sp_dc cookie value from https://te.legra.ph/How-to-get-Spotify-sp-dc-cookie-07-11 |1
+| `sp_dc` | `string` | **Required**. Spotify sp_dc cookie value. | Grab sp_dc cookie value from https://graph.org/How-to-get-Spotify-sp-dc-cookie-07-11 |1
 | `limit` | `string` | **Optional**. Limit value of results, default value is 50 |  |
 | `offset` | `string` | **Optional**. Offset value of result, default value is 0 |  |
 
@@ -318,7 +318,7 @@ POST /get-home-page-details
 
 | Parameter | Type | Description | Help |
 | :-------- | :--- | :---------- | :--- |
-| `sp_dc` | `string` | **Required**. Spotify sp_dc cookie value. | Grab sp_dc cookie value from https://te.legra.ph/How-to-get-Spotify-sp-dc-cookie-07-11 |1
+| `sp_dc` | `string` | **Required**. Spotify sp_dc cookie value. | Grab sp_dc cookie value from https://graph.org/How-to-get-Spotify-sp-dc-cookie-07-11 |1
 | `timezone` | `string` | **Required**. timezone, example Asia/Calcutta |  |
 
 Retrieves User's Home Page details
@@ -331,7 +331,7 @@ POST /get-users-details
 
 | Parameter | Type | Description | Help |
 | :-------- | :--- | :---------- | :--- |
-| `sp_dc` | `string` | **Required**. Spotify sp_dc cookie value. | Grab sp_dc cookie value from https://te.legra.ph/How-to-get-Spotify-sp-dc-cookie-07-11 |1
+| `sp_dc` | `string` | **Required**. Spotify sp_dc cookie value. | Grab sp_dc cookie value from https://graph.org/How-to-get-Spotify-sp-dc-cookie-07-11 |1
 
 Retrieves User's details
 
