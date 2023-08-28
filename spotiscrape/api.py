@@ -73,7 +73,7 @@ class DeviceInfo:
         self.ALL_DATA = data
         self.PRIMARY_DEVICE_ID = list(self.list.keys())[0]
         self.ACTIVE_DEVICE_ID = data.get("active_device_id", "")
-        self.CURRENTLY_PLAYING_TRACK_ID = data.get("player_state", {}).get("context_uri", {}).split(":")[-1]
+        self.CURRENTLY_PLAYING_TRACK_ID = data.get("player_state", {}).get("track", {}).get("uri" , {}).split(":")[-1]
 
 
 
