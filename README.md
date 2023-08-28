@@ -106,6 +106,7 @@ To get started, you need to initialize an instance of the `SpotiScrape` class by
 
 
 ```python3
+from spotiscrape import SpotiScrape
 spotify = SpotiScrape("YOUR_SPOTIFY_DC_COOKIE")
 ```
 
