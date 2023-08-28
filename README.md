@@ -8,7 +8,7 @@
 
 <br />
 
-<img src="https://i.imgur.com/y3L6XfN.png" align="right" />
+<!-- <img src="https://i.imgur.com/y3L6XfN.png" align="right" /> -->
 
 # SpotiScrape - SPOTIFY API
 Unlock Spotify Music Database and seamlessly access and extract music data from Spotify’s vast catalog with SpotiScrape, the ultimate API for developers and music enthusiasts.
@@ -465,26 +465,18 @@ UnLike a Song
 #### <a id="play-song"></a>➡️ Play Song
 
 ```python3
-spotify.play_song(trackURL)
+spotify.play_song()
 ```
 
-| Parameter | Type | Description | Example |
-| :-------- | :--- | :---------- | :--- |
-| `trackURL` | `str` | **Required**. trackURL of a spotify Track to be Played | https://open.spotify.com/track/6MlIIJwO4FxnOlrpOrS4hU  |
-
-Play a song on the player.
+Play/Resume currently playing song on the player.
 
 #### <a id="pause-song"></a>➡️ Pause Song
 
 ```python3
-spotify.pause_song(trackURL)
+spotify.pause_song()
 ```
 
-| Parameter | Type | Description | Example |
-| :-------- | :--- | :---------- | :--- |
-| `trackURL` | `str` | **Required**. trackURL of a spotify Track to be Played | https://open.spotify.com/track/6MlIIJwO4FxnOlrpOrS4hU  |
-
-Pause a song on the player.
+Pause currently playing song on the player.
 
 #### <a id="enable-repeat"></a>➡️ Enable Repeat On Player
 

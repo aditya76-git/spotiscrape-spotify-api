@@ -7,7 +7,7 @@ setuptools.setup(
     name="spotiscrape",
     version="1.0.0",
     author="aditya76-git",
-    author_email="cdr.aditya.76@gmail.com@gmail.com",
+    author_email="cdr.aditya.76@gmail.com",
     description="SpotiScrape - SPOTIFY API",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -22,7 +22,8 @@ setuptools.setup(
     install_requires=[
         "requests",
         "pybase62",
-        "pytz"
+        "pytz",
+        "termcolor"
     ],
     packages=setuptools.find_packages(),
     python_requires=">=3.6",

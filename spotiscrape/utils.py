@@ -1,4 +1,17 @@
 import base62, re, datetime, pytz
+from .errors import SpotiScrapeError
+from termcolor import colored
+
+
+def handle_exception(response, error, custom_message):
+    separator = "-" * 60
+    print(colored(separator, 'yellow'))
+    print(colored(" [+] Response:", 'cyan'), "No Response" if response.text.strip() == "" else response.text.strip())
+    print(colored(" [+] Error:", 'red'), error)
+    print(colored(" [+] Status Code:", 'green'), response.status_code)
+    print(colored(separator, 'yellow'))
+    raise SpotiScrapeError(custom_message)
+
 
 def time_to_seconds(time_str):
     minutes, seconds = map(int, time_str.split(':'))
@@ -23,18 +36,19 @@ def gid_to_uri(gid):
 
 
 def get_current_timezone():
-    # Get the current time in UTC
+    
     utc_now = datetime.datetime.utcnow()
-    
-    # Get the user's local timezone
-    local_timezone = pytz.timezone(pytz.country_timezones["US"][0])  # Replace with the desired country code
-    
-    # Convert UTC time to local time
+
+    local_timezone = pytz.timezone(pytz.country_timezones["US"][0])
+
     local_time = utc_now.replace(tzinfo=pytz.utc).astimezone(local_timezone)
     
     return str(local_time.tzinfo).replace("_" , "")
 
 def extract_id(url):
+    if "spotify.com" not in url:
+         raise SpotiScrapeError("[+] Error: Please Provide a Spotify URL")
+    
     patterns = [
         (r"/track/([^/?]+)", "trackID"),
         (r"/artist/([^/?]+)", "artistID"),

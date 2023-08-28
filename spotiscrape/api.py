@@ -1,5 +1,5 @@
 import requests
-from .utils import extract_id, get_timeTag, get_current_timezone, uri_to_gid, find_device_id, time_to_seconds
+from .utils import extract_id, get_timeTag, get_current_timezone, uri_to_gid, find_device_id, time_to_seconds, handle_exception
 from .errors import SpotiScrapeError
 import json
 
@@ -73,6 +73,8 @@ class DeviceInfo:
         self.ALL_DATA = data
         self.PRIMARY_DEVICE_ID = list(self.list.keys())[0]
         self.ACTIVE_DEVICE_ID = data.get("active_device_id", "")
+        self.CURRENTLY_PLAYING_TRACK_ID = data.get("player_state", {}).get("context_uri", {}).split(":")[-1]
+
 
 
 class SpotiScrape:
@@ -90,6 +92,7 @@ class SpotiScrape:
         self.session = requests.Session()
         self.sp_dc = sp_dc
         self.setup_headers()
+
 
     def setup_headers(self):
         self.access_token, self.client_id = self.get_access_token()
@@ -213,7 +216,7 @@ class SpotiScrape:
         ).json()
 
         if "error" in response:
-            raise SpotiScrapeError("Unauthorized. sp_dc cookie value")
+            raise SpotiScrapeError("Unauthorized. Check sp_dc cookie value")
 
         return response['accessToken'], response['clientId']
 
@@ -247,6 +250,7 @@ class SpotiScrape:
 
         return response['tracks'][0]
 
+
     def search(self, query, filter=None):
         """
         Searches for content on Spotify based on the provided query.
@@ -274,13 +278,15 @@ class SpotiScrape:
 
         if filter:
             if filter in response['data']['searchV2']:
+
                 filtered_dict = {
                     filter: response['data']['searchV2'][filter]
                 }
                 return filtered_dict
+
             else:
-                available_filters = "topResults, albums, artists, episodes, genres, playlists, podcasts, audiobooks, users"
-                raise SpotiScrapeError("Filter '{}' not found. Available Filters - {}".format(filter, available_filters))
+                raise SpotiScrapeError("Filter {} not Found. Available Filters - {}".format(
+                    filter, "topResults, albums, artists, episodes, genres, playlists, podcasts, audiobooks, users"))
         else:
             return response['data']['searchV2']['topResults']['itemsV2']
 
@@ -307,15 +313,16 @@ class SpotiScrape:
         }
 
         response = self.session.get(
-            'https://api-partner.spotify.com/pathfinder/v1/query', params=params
-        ).json()
-
+            'https://api-partner.spotify.com/pathfinder/v1/query', params=params)
         try:
-            poster_sources = response['data']['trackUnion']['albumOfTrack']['coverArt']['sources']
-            poster_url = poster_sources[-1]['url']
-            return poster_url
-        except KeyError:
-            raise SpotiScrapeError("Error retrieving Poster URL. Check Track URL or response format.")
+            response = response.json()
+            posterURL = response['data']['trackUnion']['albumOfTrack']['coverArt']['sources'][-1]['url']
+            return posterURL
+        
+        except Exception as e:
+
+            handle_exception(response, e, "Error retrieving Poster URL. Check Track URL or response format.")
+        
         
 
     def get_lyrics(self, trackURL, format=None):
@@ -332,14 +339,10 @@ class SpotiScrape:
         Raises:
             SpotiScrapeError: If there's an issue retrieving lyrics or if the track URL is invalid.
         """
-
         self.session.headers.update({'app-platform': 'WebPlayer'})
 
         trackID = extract_id(trackURL)
-        try:
-            posterURL = self.get_poster_url(trackURL)
-        except SpotiScrapeError as e:
-            raise SpotiScrapeError(f"Error retrieving Poster URL: {e}")
+        posterURL = self.get_poster_url(trackURL)
 
         params = {
             'format': 'json',
@@ -350,13 +353,18 @@ class SpotiScrape:
         posterID = posterURL.split("/")[-1]
 
         response = self.session.get(
-            f'https://spclient.wg.spotify.com/color-lyrics/v2/track/{trackID}/image/https%3A%2F%2Fi.scdn.co%2Fimage%2F{posterID}',
+            'https://spclient.wg.spotify.com/color-lyrics/v2/track/{}/image/https%3A%2F%2Fi.scdn.co%2Fimage%2F{}'.format(
+                trackID, posterID),
             params=params,
-        ).json()
+        )
 
         if format == "lrc":
+
             try:
+                response = response.json()
+
                 new_lines = []
+
                 for lines in response['lyrics']['lines']:
                     new_lines.append({
                         'timeTag': get_timeTag(lines['startTimeMs']),
@@ -364,13 +372,16 @@ class SpotiScrape:
                         'syllables': lines['syllables']
                     })
                 del response['lyrics']['lines']
+
                 response['lyrics']['lines'] = new_lines
                 return response
-            except KeyError:
-                raise SpotiScrapeError("Error parsing lyrics format.")
-        else:
-            return response
+            
+            except Exception as e:
 
+                handle_exception(response, e, "Error parsing lyrics format. Check Track URL or response format.")
+
+        else:
+            return response.json()
 
     def get_recommended_tracks(self, trackURL):
         """
@@ -393,13 +404,19 @@ class SpotiScrape:
             'extensions': '{"persistedQuery":{"version":1,"sha256Hash":"97f52864d50ba62ab761a7bff47f1a9921d9e357316f7d60ad84ae3788eea4cf"}}',
         }
 
+        response = self.session.get(
+            'https://api-partner.spotify.com/pathfinder/v1/query', params=params)
+        
         try:
-            response = self.session.get(
-                'https://api-partner.spotify.com/pathfinder/v1/query', params=params).json()
-            recommended_items = response['data']['seoRecommended']['items']
-            return recommended_items
-        except KeyError:
-            raise SpotiScrapeError("Error retrieving recommended tracks. Check track URL or response format.")
+            response = response.json()
+            return response['data']['seoRecommended']['items']
+        except Exception as e:
+
+            handle_exception(response, e, "Error retrieving recommended tracks. Check track URL or response format.")
+
+
+
+
         
     def get_track_credits(self, trackURL):
         """
@@ -416,14 +433,18 @@ class SpotiScrape:
         """
         trackID = extract_id(trackURL)
 
-        self.session.headers.update({'app-platform': 'WebPlayer'})
+        self.session.headers.update({'app-platform': 'WebPlayer', })
 
+        response = self.session.get(
+            f'https://spclient.wg.spotify.com/track-credits-view/v0/experimental/{trackID}/credits')
+        
         try:
-            response = self.session.get(
-                f'https://spclient.wg.spotify.com/track-credits-view/v0/experimental/{trackID}/credits').json()
+            response = response.json()
             return response
         except Exception as e:
-            raise SpotiScrapeError(f"Error retrieving track credits: {e}")
+            handle_exception(response, e, "Error retrieving recommended tracks. Check track URL or response format.")
+
+   
 
 
     def get_artist_info(self, artistURL, filter=None, topTracks=None):
@@ -449,25 +470,29 @@ class SpotiScrape:
             'extensions': '{"persistedQuery":{"version":1,"sha256Hash":"35648a112beb1794e39ab931365f6ae4a8d45e65396d641eeda94e4003d41497"}}',
         }
 
+        response = self.session.get(
+            'https://api-partner.spotify.com/pathfinder/v1/query', params=params)
+        
         try:
-            response = self.session.get(
-                'https://api-partner.spotify.com/pathfinder/v1/query', params=params).json()
+
+            response = response.json()
 
             if filter:
                 if filter in response['data']['artistUnion']:
                     return response['data']['artistUnion'][filter]
                 else:
-                    raise SpotiScrapeError("Filter not found in response.")
-            elif topTracks:
+                    raise SpotiScrapeError("Filter not Found in Response")
+            elif topTracks == True:
                 return response['data']['artistUnion']['discography']['topTracks']
             else:
                 return response['data']['artistUnion']
             
-        except KeyError:
-            raise SpotiScrapeError("Error retrieving artist information. Check artist URL or response format.")
-        
         except Exception as e:
-            raise SpotiScrapeError(f"Error: {e}")
+            
+            handle_exception(response, e, "Error retrieving artist information. Check artist URL or response format.")
+            
+        
+
 
     def get_home_page_info(self):
         """
@@ -481,28 +506,33 @@ class SpotiScrape:
         """
         self.session.headers.update({'app-platform': 'WebPlayer'})
 
+        time_zone = get_current_timezone()
+
+        params = {
+            'operationName': 'home',
+            'variables': '{{"timeZone":"{}"}}'.format(time_zone),
+            'extensions': '{"persistedQuery":{"version":1,"sha256Hash":"3099d0901548aa93509318763519c57acd1a0bb533a9793ff57732fe8b91504a"}}',
+        }
+
+        data = {
+
+        }
+
+        response = self.session.get(
+            'https://api-partner.spotify.com/pathfinder/v1/query', params=params)
+        
         try:
-            time_zone = get_current_timezone()
 
-            params = {
-                'operationName': 'home',
-                'variables': '{{"timeZone":"{}"}}'.format(time_zone),
-                'extensions': '{"persistedQuery":{"version":1,"sha256Hash":"3099d0901548aa93509318763519c57acd1a0bb533a9793ff57732fe8b91504a"}}',
-            }
+            response = response.json()
 
-            response = self.session.get(
-                'https://api-partner.spotify.com/pathfinder/v1/query', params=params).json()
+            data['greeting'] = response['data']['home']['greeting']
+            data['sections'] = response['data']['home']['sectionContainer']['sections']
 
-            data = {
-                'greeting': response['data']['home']['greeting'],
-                'sections': response['data']['home']['sectionContainer']['sections']
-            }
-
-            return data
-        except KeyError:
-            raise SpotiScrapeError("Error retrieving home page information. Check response format.")
         except Exception as e:
-            raise SpotiScrapeError(f"Error: {e}")
+            handle_exception(response, e, "Error retrieving home page information. Check response format.")
+
+        return data
+
 
 
     def get_user_details(self):
@@ -517,15 +547,17 @@ class SpotiScrape:
         """
         self.session.headers.update({'app-platform': 'WebPlayer'})
 
-        try:
-            response = self.session.get('https://api.spotify.com/v1/me')
+        response = self.session.get('https://api.spotify.com/v1/me')
 
-            if response.status_code == 200:
-                return response.json()
-            else:
-                raise SpotiScrapeError("Error retrieving user details. Check authentication or response status.")
+        try:
+            response = response.json()
+            return response
+        
         except Exception as e:
-            raise SpotiScrapeError(f"Error: {e}")
+
+            handle_exception(response, e, "Error retrieving user details. Check authentication or response status.")
+
+
 
 
     def get_recently_played(self, offset=0, limit=50):
@@ -544,31 +576,35 @@ class SpotiScrape:
         """
         self.session.headers.update({'app-platform': 'WebPlayer'})
 
+        userID = self.get_user_details()['uri'].split(":")[-1]
+
+        params = {
+            'format': 'json',
+            'filter': 'default,collection-new-episodes',
+            'market': 'from_token',
+        }
+
+        if offset and limit:
+            params['offset'] = str(offset)
+            params['limit'] = str(limit)
+
+        else:
+            params['offset'] = "0"
+            params['limit'] = "50"
+
         try:
-            user_details = self.get_user_details()
-            userID = user_details['uri'].split(":")[-1]
 
-            params = {
-                'format': 'json',
-                'filter': 'default,collection-new-episodes',
-                'market': 'from_token',
-            }
-
-            if offset and limit:
-                params['offset'] = str(offset)
-                params['limit'] = str(limit)
-
+            response = response.json()
 
             response = self.session.get(
                 f'https://spclient.wg.spotify.com/recently-played/v3/user/{userID}/recently-played',
                 params=params
-            ).json()
+            )
 
-            return response
-        except KeyError:
-            raise SpotiScrapeError("Error retrieving user details. Check response format.")
         except Exception as e:
-            raise SpotiScrapeError(f"Error: {e}")
+            handle_exception(response, e, "Error retrieving user details. Check response format.")
+
+
 
     def get_liked_songs(self, offset=0, limit=25):
         """
@@ -586,25 +622,28 @@ class SpotiScrape:
         """
         self.session.headers.update({'app-platform': 'WebPlayer'})
 
+        params = {
+            'operationName': 'fetchLibraryTracks',
+            'extensions': '{"persistedQuery":{"version":1,"sha256Hash":"8474ec383b530ce3e54611fca2d8e3da57ef5612877838b8dbf00bd9fc692dfb"}}',
+        }
+
+        if offset and limit:
+            params['variables'] = '{{"offset":{},"limit":{}}}'.format(
+                offset, limit)
+
+
+        response = self.session.get(
+            'https://api-partner.spotify.com/pathfinder/v1/query', params=params)
+        
         try:
-            params = {
-                'operationName': 'fetchLibraryTracks',
-                'extensions': '{"persistedQuery":{"version":1,"sha256Hash":"8474ec383b530ce3e54611fca2d8e3da57ef5612877838b8dbf00bd9fc692dfb"}}',
-            }
+            response = response.json()
 
-            if offset and limit:
-                params['variables'] = '{{"offset":{},"limit":{}}}'.format(int(offset), int(limit))
-
-            response = self.session.get(
-                'https://api-partner.spotify.com/pathfinder/v1/query', params=params).json()
-
-            liked_songs = response.get('data', {}).get('me', {}).get('library', {}).get('tracks', [])
-
-            return liked_songs
-        except KeyError:
-            raise SpotiScrapeError("Error retrieving liked songs. Check response format.")
+            return response['data']['me']['library']['tracks']
+        
         except Exception as e:
-            raise SpotiScrapeError(f"Error: {e}")
+
+            handle_exception(response, e, "Error retrieving liked songs. Check response format.")
+
 
 
     def get_playlist_info(self, playlistURL, offset=0, limit=25):
@@ -626,26 +665,27 @@ class SpotiScrape:
 
         self.session.headers.update({'app-platform': 'WebPlayer'})
 
+        params = {
+            'operationName': 'fetchPlaylist',
+            'extensions': '{"persistedQuery":{"version":1,"sha256Hash":"5534e86cc2181b9e70be86ae26d514abd8d828be2ee56e5f8b7882dd70204c62"}}',
+        }
+
+        if offset and limit:
+            params['variables'] = '{{"uri":"spotify:playlist:{}","offset":{},"limit":{}}}'.format(
+                playlistID, offset, limit)
+
+        response = self.session.get(
+            'https://api-partner.spotify.com/pathfinder/v1/query', params=params)
+        
         try:
-            params = {
-                'operationName': 'fetchPlaylist',
-                'extensions': '{"persistedQuery":{"version":1,"sha256Hash":"5534e86cc2181b9e70be86ae26d514abd8d828be2ee56e5f8b7882dd70204c62"}}',
-            }
+            response = response.json()
 
-            if offset and limit:
-                params['variables'] = '{{"uri":"spotify:playlist:{}","offset":{},"limit":{}}}'.format(
-                    playlistID, offset, limit)
+            return response['data']['playlistV2']
 
-            response = self.session.get(
-                'https://api-partner.spotify.com/pathfinder/v1/query', params=params).json()
-
-            playlist_info = response.get('data', {}).get('playlistV2', {})
-
-            return playlist_info
-        except KeyError:
-            raise SpotiScrapeError("Error retrieving playlist information. Check response format.")
         except Exception as e:
-            raise SpotiScrapeError(f"Error: {e}")
+
+            handle_exception(response, e, "Error retrieving playlist information. Check response format.")
+
 
 
     def get_user_profile_details(self, userURL=None, limit=10):
@@ -664,35 +704,34 @@ class SpotiScrape:
         """
         self.session.headers.update({'app-platform': 'WebPlayer'})
 
+        if userURL is None:
+            userID = userID = self.get_user_details()['uri'].split(":")[-1]
+        else:
+            userID = extract_id(userURL)
+
+
+        params = {
+            'market': 'from_token',
+        }
+
+        if limit:
+            params['playlist_limit'] = str(limit)
+            params['artist_limit'] = str(limit)
+            params['episode_limit'] = str(limit)
+
+        response = self.session.get(
+            f'https://spclient.wg.spotify.com/user-profile-view/v3/profile/{userID}',
+            params=params
+        )
+
         try:
-            
 
-            if userURL is None:
-                userID = self.get_user_details()['uri'].split(":")[-1]
-            else:
-                userID = extract_id(userURL)
+            response = response.json()
+            return response
 
-            params = {
-                'market': 'from_token',
-            }
-
-            if limit:
-                params['playlist_limit'] = str(limit)
-                params['artist_limit'] = str(limit)
-                params['episode_limit'] = str(limit)
-
-            response = self.session.get(
-                f'https://spclient.wg.spotify.com/user-profile-view/v3/profile/{userID}',
-                params=params
-            ).json()
-
-            user_profile_details = response.get('data', {})
-
-            return user_profile_details
-        except KeyError:
-            raise SpotiScrapeError("Error retrieving user profile details. Check response format.")
         except Exception as e:
-            raise SpotiScrapeError(f"Error: {e}")
+            handle_exception(response, e, "Error retrieving user profile details. Check response format.")
+    
 
     def get_top(self, type="tracks", offset=0, limit=10):
         """
@@ -711,23 +750,32 @@ class SpotiScrape:
         """
         self.session.headers.update({'app-platform': 'WebPlayer'})
 
+        if type is None:
+            type = "tracks"
+
+        params = {
+            'time_range': 'short_term',
+        }
+
+        if limit and offset:
+            params['limit'] = str(limit)
+            params['offset'] = str(offset)
+        else:
+            params['offset'] = "0"
+            params['limit'] = "10"
+
+        response = self.session.get(
+            f'https://api.spotify.com/v1/me/top/{type}', params=params)
+        
         try:
-            params = {
-                'time_range': 'short_term',
-                'offset': str(offset),
-                'limit': str(limit)
-            }
 
-            response = self.session.get(
-                f'https://api.spotify.com/v1/me/top/{type}', params=params).json()
-
-            top_data = response.get(type, {})
-
-            return top_data
-        except KeyError:
-            raise SpotiScrapeError("Error retrieving top tracks or artists. Check response format.")
+            response = response.json()
+            return response
+        
         except Exception as e:
-            raise SpotiScrapeError(f"Error: {e}")
+            handle_exception(response, e, "Error retrieving top tracks or artists. Check response format.")
+
+   
 
 
     def get_top_artists(self, offset=0, limit=10):
@@ -780,28 +828,32 @@ class SpotiScrape:
         # Set the headers for the session
         self.session.headers.update({'app-platform': 'WebPlayer'})
 
-        # Determine the user ID based on the provided user URL or the authenticated user's profile
         if userURL is None:
             userID = self.get_user_details()['uri'].split(":")[-1]
         else:
             userID = extract_id(userURL)
 
-        # Default type to 'following' if not provided
         if type is None:
             type = "following"
 
-        # Set the query parameters
         params = {
             'market': 'from_token',
         }
 
-        # Make the request to retrieve connections
         response = self.session.get(
             f'https://spclient.wg.spotify.com/user-profile-view/v3/profile/{userID}/{type}',
             params=params
-        ).json()
+        )
 
-        return response
+        try:
+
+            response = response.json()
+            return response
+        
+        except Exception as e:
+
+            handle_exception(response, e, "Error retrieving user's connections. Check track URL or response format.")
+
 
     def artist_operation(self, artistURL, operation_name):
         """
@@ -818,46 +870,36 @@ class SpotiScrape:
             SpotiScrapeError: If there's an issue with the operation or the response format is unexpected.
         """
 
+        self.session.headers.update({'app-platform': 'WebPlayer'})
+
+        artistID = extract_id(artistURL)
+
+        json_data = {
+            'variables': {
+                'uris': [
+                    'spotify:artist:{}'.format(artistID),
+                ],
+            },
+            'operationName': operation_name,
+            'extensions': {
+                'persistedQuery': {
+                    'version': 1,
+                    'sha256Hash': '656c491c3f65d9d08d259be6632f4ef1931540ebcf766488ed17f76bb9156d15' if operation_name == "addToLibrary" else "1103bfd4b9d80275950bff95ef6d41a02cec3357e8f7ecd8974528043739677c",
+                },
+            },
+        }
+
+        response = self.session.post(
+            'https://api-partner.spotify.com/pathfinder/v1/query', json=json_data)
+        
         try:
-            # Set the headers for the session
-            self.session.headers.update({'app-platform': 'WebPlayer'})
+            response = response.json()
 
-            # Extract the artist ID from the artist URL
-            artistID = extract_id(artistURL)
-
-            # Prepare the JSON data for the operation
-            json_data = {
-                'variables': {
-                    'uris': [
-                        'spotify:artist:{}'.format(artistID),
-                    ],
-                },
-                'operationName': operation_name,
-                'extensions': {
-                    'persistedQuery': {
-                        'version': 1,
-                        'sha256Hash': (
-                            '656c491c3f65d9d08d259be6632f4ef1931540ebcf766488ed17f76bb9156d15'
-                            if operation_name == "addToLibrary"
-                            else "1103bfd4b9d80275950bff95ef6d41a02cec3357e8f7ecd8974528043739677c"
-                        ),
-                    },
-                },
-            }
-
-            # Make the POST request to perform the artist operation
-            response = self.session.post(
-                'https://api-partner.spotify.com/pathfinder/v1/query', json=json_data
-            )
-
-            response_json = response.json()
-            if "data" in response_json:
-                return response_json["data"]
-            else:
-                raise SpotiScrapeError("Unexpected response format")
-
+            return response
+        
         except Exception as e:
-            raise SpotiScrapeError(f"An error occurred: {str(e)}")
+            handle_exception(response, e, "Error Performing Artist Operation. Check track URL or response format.")
+
 
     def follow_artist(self, artistURL):
         """
@@ -872,12 +914,18 @@ class SpotiScrape:
         Raises:
             SpotiScrapeError: If there's an error while following the artist.
         """
-        res = self.artist_operation(artistURL, "addToLibrary")
+        
 
-        if res.status_code != 200:
-            raise SpotiScrapeError("Error Following Artist")
-        else:
-            return "Artist Followed"
+        try:
+            response = self.artist_operation(artistURL, "addToLibrary")
+            return("Artist Followed")
+
+        except Exception as e:
+
+            handle_exception(response, e, "Error Following Artist. Check Artist URL or response format.")
+            
+
+
 
     def unfollow_artist(self, artistURL):
         """
@@ -892,14 +940,16 @@ class SpotiScrape:
         Raises:
             SpotiScrapeError: If there's an error while unfollowing the artist.
         """
-        res = self.artist_operation(artistURL, "removeFromLibrary")
+        try:
+            response = self.artist_operation(artistURL, "removeFromLibrary")
+            return("Artist UnFollowed")
 
-        if res.status_code != 200:
-            raise SpotiScrapeError("Error Unfollowing Artist")
-        else:
-            return "Artist Unfollowed"
+        except Exception as e:
 
-    def devices(self, device_id):
+            handle_exception(response, e, "Error UnFollowing Artist. Check Artist URL or response format.")
+
+
+    def devices(self):
         """
         Get Devices Connected with the Authenticated Account.
 
@@ -912,9 +962,8 @@ class SpotiScrape:
         Raises:
             SpotiScrapeError: If there's an error while connecting the device.
         """
-        headers = {
-            'x-spotify-connection-id': self.connection_id
-        }
+        self.session.headers.update(
+            {'x-spotify-connection-id': 'Y2FlODljOGUtNDA3Zi00ZTQ2LTk3YjItMDZhYmJlNzA4OWMxK2RlYWxlcit0Y3A6Ly9nYWUyLWRlYWxlci1hLWxjcHMuZ2FlMi5zcG90aWZ5Lm5ldDo1NzAwK0M3QUYyRUNBNUFBNDEwN0ZEQTExODVDMTRGNDhGOTA0NjIxNDc5MDA0RTM4NDBDQjI3RTI0QzdDN0UxMEI3QkM='})
 
         json_data = {
             'member_type': 'CONNECT_STATE',
@@ -929,14 +978,21 @@ class SpotiScrape:
             },
         }
 
-        url = f'https://gae2-spclient.spotify.com/connect-state/v1/devices/{device_id}'
+        response = self.session.put(
+            'https://gae2-spclient.spotify.com/connect-state/v1/devices/hobs_1244c7ff01cd7cfcab51e39d2fb5573e71b',
+            json=json_data,
+        )
 
-        response = self.session.put(url, json=json_data, headers=headers)
+        try:
+            response = response.json()
 
-        if response.status_code == 200:
-            return DeviceInfo(response.json())
-        else:
-            raise SpotiScrapeError("Error")
+            return DeviceInfo(response)
+        
+        except Exception as e:
+
+            handle_exception(response, e, "Error Retriving Device Info. Check Response Format")
+
+      
 
     def get_artist_discography_all(self, artistURL, limit=0, offset=50):
         """
@@ -965,16 +1021,20 @@ class SpotiScrape:
         if offset and limit:
             params['variables'] = '{{"uri":"spotify:artist:{}","offset":{},"limit":{}}}'.format(
                 artistID, offset, limit)
+        else:
+            params['variables'] = '{{"uri":"spotify:artist:{}","offset":0,"limit":50}}'.format(
+                artistID)
 
         response = self.session.get(
             'https://api-partner.spotify.com/pathfinder/v1/query', params=params)
+        
+        try:
+            response = response.json()
 
-        if response.status_code == 200:
-            data = response.json()
-            return data.get('data', {}).get('artistUnion', {}).get('discography', {})
-        else:
-            raise SpotiScrapeError("Error retrieving artist discography")
-
+            return response['data']['artistUnion']['discography']
+        
+        except Exception as e:
+            handle_exception(response, e, "Error retrieving artist discography. Check artist URL or response format.")
 
     def get_track_metadata(self, trackURL):
         """
@@ -1004,12 +1064,15 @@ class SpotiScrape:
             params=params
         )
 
-        if response.status_code == 200:
-            data = response.json()
-            return data
-        else:
-            raise SpotiScrapeError("Error retrieving track metadata")
+        try:
 
+            response = response.json()
+            return response
+        
+        except Exception as e:
+            handle_exception(response, e, "Error retrieving track metadata. Check track URL or response format.")
+
+    
 
     def get_cdnURL(self, fileID):
         """
@@ -1031,9 +1094,17 @@ class SpotiScrape:
         response = self.session.get(
             f'https://gae2-spclient.spotify.com/storage-resolve/v2/files/audio/interactive/10/{fileID}',
             params=params,
-        ).json()
+        )
 
-        return response['cdnurl'][-1]
+        try:
+            response = response.json()
+            return response['cdnurl'][-1]
+        
+        except Exception as e:
+
+            handle_exception(response, e, "Error retrieving CDN URL. Check track URL or response format.")
+
+
 
 
     def get_file_id(self, trackURL, format=None):
@@ -1074,9 +1145,16 @@ class SpotiScrape:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
         }
         response = requests.get(
-            f'https://seektables.scdn.co/seektable/{fileID}.json', headers=headers).json()
+            f'https://seektables.scdn.co/seektable/{fileID}.json', headers=headers)
+        
+        try:
+            response = response.json()
 
-        return response['pssh']
+            return response['pssh']
+        
+        except Exception as e:
+
+            handle_exception(response, e, "Error retrieving PSSH. Check track URL or response format.")
 
 
     def get_streams(self, trackURL, format=None):
@@ -1107,7 +1185,7 @@ class SpotiScrape:
             dict: The JSON response indicating the success of the operation.
         """
 
-        deviceID = self.devices().ACTIVE_DEVICE_ID
+        deviceID = self.devices().ACTIVE_DEVICE_ID if self.devices().ACTIVE_DEVICE_ID.strip() != "" else self.devices().PRIMARY_DEVICE_ID
 
         trackID = extract_id(trackURL)
 
@@ -1130,8 +1208,15 @@ class SpotiScrape:
             json=json_data,
         )
 
-        return response.json()
+        try:
 
+            response = response.json()
+            return response
+        
+        except Exception as e:
+
+            handle_exception(response, e, "Error Adding Track to Queue. Check track URL or response format.")
+        
     def move_items_in_playlist(self, playlistURL, trackURL, newPosition):
         """
         Move a track within a playlist to a new position.
@@ -1189,7 +1274,14 @@ class SpotiScrape:
         response = self.session.post(
             'https://api-partner.spotify.com/pathfinder/v1/query', json=json_data)
 
-        return response.json()
+        try:
+
+            response = response.json()
+            return response
+        
+        except Exception as e:
+            handle_exception(response, e, "Error Moving Track to New Position. Check track URL, playlistURL or response format.")
+  
 
     def reorder_items_in_playlist(self, playlistURL, oldPosition, newPosition):
 
@@ -1240,8 +1332,16 @@ class SpotiScrape:
 
         response = self.session.post(
             'https://api-partner.spotify.com/pathfinder/v1/query', json=json_data)
+        
+        try:
+            response = response.json()
+            return response
+        
+        except Exception as e:
 
-        return response.json()
+            handle_exception(response, e, "Error Reordering Track in Playlist. Check track URL, playlistURL or response format.")
+
+
 
     def liked_songs_operation(self, trackURL, operation_name):
 
@@ -1276,9 +1376,17 @@ class SpotiScrape:
         }
 
         response = self.session.post(
-            'https://api-partner.spotify.com/pathfinder/v1/query', json=json_data).json()
+            'https://api-partner.spotify.com/pathfinder/v1/query', json=json_data)
+        
+        try:
+            response = response.json()
+
+        except Exception as e:
+
+            handle_exception(response, e, "Error Operating on Liked Songs. Check track URL or response format.")
 
         return response
+
 
     def like_song(self, trackURL):
         """
@@ -1356,7 +1464,15 @@ class SpotiScrape:
         response = self.session.post(
             'https://api-partner.spotify.com/pathfinder/v1/query', json=json_data)
 
-        return response.json()
+        try:
+
+            response = response.json()
+            return response
+        
+        except Exception as e:
+
+            handle_exception(response, e, "Error Removing Track From Playlist. Check playlist URL or response format.")
+
 
     def add_track_to_playlist(self, trackURL, playlistURL, positon=None):
 
@@ -1404,10 +1520,17 @@ class SpotiScrape:
             },
         }
 
+
         response = self.session.post(
             'https://api-partner.spotify.com/pathfinder/v1/query', json=json_data)
+        
+        try:
+            response = response.json()
+            return response
 
-        return response.json()
+        except Exception as e:
+
+            handle_exception(response, e, "Error Adding Track to Playlist. Check track URL or response format.")
 
     def edit_playlist_details(self, playlistURL, newTitle, newDescription=None):
 
@@ -1459,9 +1582,15 @@ class SpotiScrape:
 
         response = self.session.post(
             'https://spclient.wg.spotify.com/playlist/v2/playlist/{}/changes'.format(playlistID), json=json_data
-        ).json()
+        )
 
-        return response
+        try:
+            response = response.json()
+            return response
+        
+        except Exception as e:
+        
+            handle_exception(response, e, "Error Editing Playlist Details. Check playlist URL or response format.")
 
     def manage_player(self, trackURL, operation_name):
         """
@@ -1481,7 +1610,7 @@ class SpotiScrape:
             raise SpotiScrapeError(
                 "Invalid Operation for Player Choose from pause or play")
 
-        deviceID = self.devices().ACTIVE_DEVICE_ID
+        deviceID = self.devices().ACTIVE_DEVICE_ID if self.devices().ACTIVE_DEVICE_ID.strip() != "" else self.devices().PRIMARY_DEVICE_ID
 
         json_data = {
             'command': {
@@ -1503,9 +1632,19 @@ class SpotiScrape:
             json=json_data,
         )
 
-        return response.json()
+        try:
 
-    def play_song(self, trackURL):
+            response = response.json()
+            return response
+
+        except Exception as e:
+
+            handle_exception(response, e, "Error {}ing Player. Check track URL or response format.".format(operation_name))
+
+
+     
+
+    def play_song(self):
         """
         Play a song on the player.
 
@@ -1515,11 +1654,12 @@ class SpotiScrape:
         Returns:
             dict: The JSON response indicating the success of the operation.
         """
+        trackURL = "https://open.spotify.com/track/{}".format(self.devices().CURRENTLY_PLAYING_TRACK_ID)
         res = self.manage_player(trackURL, "play")
 
         return res
 
-    def pause_song(self, trackURL):
+    def pause_song(self):
         """
         Pause a song on the player.
 
@@ -1529,6 +1669,7 @@ class SpotiScrape:
         Returns:
             dict: The JSON response indicating the success of the operation.
         """
+        trackURL = "https://open.spotify.com/track/{}".format(self.devices().CURRENTLY_PLAYING_TRACK_ID)
         res = self.manage_player(trackURL, "pause")
 
         return res
@@ -1561,9 +1702,16 @@ class SpotiScrape:
         }
 
         response = self.session.post(
-            'https://api-partner.spotify.com/pathfinder/v1/query', json=json_data).json()
+            'https://api-partner.spotify.com/pathfinder/v1/query', json=json_data)
+        
+        try:
+            response = response.json()
 
-        return response
+        except Exception as e:
+            
+            handle_exception(response, e, "Error Pining Playlist. Check playlist URL or response format.")
+
+
 
     def unpin_playlist(self, playlistURL):
 
@@ -1595,9 +1743,17 @@ class SpotiScrape:
         }
 
         response = self.session.post(
-            'https://api-partner.spotify.com/pathfinder/v1/query', json=json_data).json()
+            'https://api-partner.spotify.com/pathfinder/v1/query', json=json_data)
+        
+        try:
+            response = response.json()
+            return response
+        
+        except Exception as e:
 
-        return response
+            handle_exception(response, e, "Error UnPining Playlist. Check playlist URL or response format.")
+
+
 
     def seek_player(self, seek_to):
         seek_to_sec = time_to_seconds(seek_to)
@@ -1623,7 +1779,7 @@ class SpotiScrape:
             dict: The JSON response indicating the success of the operation.
         """
 
-        deviceID = self.devices().ACTIVE_DEVICE_ID
+        deviceID = self.devices().ACTIVE_DEVICE_ID if self.devices().ACTIVE_DEVICE_ID.strip() != "" else self.devices().PRIMARY_DEVICE_ID
 
         json_data = {
             'command': {
@@ -1637,9 +1793,18 @@ class SpotiScrape:
             'https://gae2-spclient.spotify.com/connect-state/v1/player/command/from/{}/to/{}'.format(
                 deviceID, deviceID),
             json=json_data,
-        ).json()
+        )
+        try:
 
-        return response
+            response = response.json()
+
+            return response
+        
+        except Exception as e:
+
+            handle_exception(response, e, "Error Enabling Repeat on Player. Check response format.")
+
+
 
     def enable_repeat_one(self):
         """
@@ -1649,7 +1814,7 @@ class SpotiScrape:
             dict: The JSON response indicating the success of the operation.
         """
 
-        deviceID = self.devices().ACTIVE_DEVICE_ID
+        deviceID = self.devices().ACTIVE_DEVICE_ID if self.devices().ACTIVE_DEVICE_ID.strip() != "" else self.devices().PRIMARY_DEVICE_ID
 
         json_data = {
             'command': {
@@ -1663,9 +1828,18 @@ class SpotiScrape:
             'https://gae2-spclient.spotify.com/connect-state/v1/player/command/from/{}/to/{}'.format(
                 deviceID, deviceID),
             json=json_data,
-        ).json()
+        )
 
-        return response
+        try:
+
+            response = response.json()
+
+            return response
+        
+        except Exception as e:
+
+            handle_exception(response, e, "Error Enabling Repeat of the current track on Player. Check response format.")
+
 
     def disable_repeat(self):
         """
@@ -1675,7 +1849,7 @@ class SpotiScrape:
             dict: The JSON response indicating the success of the operation.
         """
 
-        deviceID = self.devices().ACTIVE_DEVICE_ID
+        deviceID = self.devices().ACTIVE_DEVICE_ID if self.devices().ACTIVE_DEVICE_ID.strip() != "" else self.devices().PRIMARY_DEVICE_ID
 
         json_data = {
             'command': {
@@ -1689,9 +1863,19 @@ class SpotiScrape:
             'https://gae2-spclient.spotify.com/connect-state/v1/player/command/from/{}/to/{}'.format(
                 deviceID, deviceID),
             json=json_data,
-        ).json()
+        )
 
-        return response
+        try:
+
+            response = response.json()
+
+            return response
+        
+        except Exception as e:
+
+            handle_exception(response, e, "Error Disabing Repeat on Player. Check response format.")
+
+
 
     def enable_shuffle(self):
         """
@@ -1701,7 +1885,7 @@ class SpotiScrape:
             dict: The JSON response indicating the success of the operation.
         """
 
-        deviceID = self.devices().ACTIVE_DEVICE_ID
+        deviceID = self.devices().ACTIVE_DEVICE_ID if self.devices().ACTIVE_DEVICE_ID.strip() != "" else self.devices().PRIMARY_DEVICE_ID
 
         json_data = {
             'command': {
@@ -1714,10 +1898,18 @@ class SpotiScrape:
             'https://gae2-spclient.spotify.com/connect-state/v1/player/command/from/{}/to/{}'.format(
                 deviceID, deviceID),
             json=json_data,
-        ).json()
+        )
+        
+        try:
 
-        return response
+            response = response.json()
 
+            return response
+        
+        except Exception as e:
+
+            handle_exception(response, e, "Error Enabling Shuffle on Player. Check response format.")
+    
     def disable_shuffle(self):
         """
         Disable shuffling of the current context.
@@ -1726,7 +1918,7 @@ class SpotiScrape:
             dict: The JSON response indicating the success of the operation.
         """
 
-        deviceID = self.devices().ACTIVE_DEVICE_ID
+        deviceID = self.devices().ACTIVE_DEVICE_ID if self.devices().ACTIVE_DEVICE_ID.strip() != "" else self.devices().PRIMARY_DEVICE_ID
 
         json_data = {
             'command': {
@@ -1739,9 +1931,18 @@ class SpotiScrape:
             'https://gae2-spclient.spotify.com/connect-state/v1/player/command/from/{}/to/{}'.format(
                 deviceID, deviceID),
             json=json_data,
-        ).json()
+        )
 
-        return response
+        try:
+
+            response = response.json()
+
+            return response
+        
+        except Exception as e:
+
+            handle_exception(response, e, "Error Disabling Shuffle on Player. Check response format.")
+            
 
     def get_public_playlists(self, userURL=None, offset=0, limit=200):
         """
@@ -1771,12 +1972,21 @@ class SpotiScrape:
             params['offset'] = str(offset)
             params['limit'] = str(limit)
 
+        else:
+            params['offset'] = "0"
+            params['limit'] = "200"
+
         response = self.session.get(
             'https://spclient.wg.spotify.com/user-profile-view/v3/profile/{}/playlists'.format(userID),
             params=params,
-        ).json()
+        )
 
-        return response
+        try:
+            response = response.json()
+            return response
+        
+        except Exception as e:
+            handle_exception(response, e, "Error Getting Public Playlist of USER. Check user URL or response format.")
 
     def get_account_info(self):
 
@@ -1787,9 +1997,17 @@ class SpotiScrape:
         }
 
         response = self.session.get(
-            'https://spclient.wg.spotify.com/melody/v1/product_state', params=params).json()
+            'https://spclient.wg.spotify.com/melody/v1/product_state', params=params)
+        
+        try:
 
-        return response
+            response = response.json()
+            return response
+        
+        except Exception as e:
+
+            handle_exception(response, e, "Error retrieving Account Info of Authenticated. Check response format.")
+
 
     def get_library(self, offset=0, limit=50):
 
@@ -1807,7 +2025,7 @@ class SpotiScrape:
 
         params = {
             'operationName': 'libraryV2',
-            'variables': '{"filters":[],"order":"Creator","textFilter":"","features":["LIKED_SONGS","YOUR_EPISODES"],"limit":0,"offset":0,"flatten":false,"expandedFolders":[],"folderUri":null,"includeFoldersWhenFlattening":true}',
+            'variables': '{"filters":[],"order":"Creator","textFilter":"","features":["LIKED_SONGS","YOUR_EPISODES"],"limit":50,"offset":0,"flatten":false,"expandedFolders":[],"folderUri":null,"includeFoldersWhenFlattening":true}',
             'extensions': '{"persistedQuery":{"version":1,"sha256Hash":"93662a816ebf38ab32f6028512e584c53c4b71d6aad920ce6039a4a62236574e"}}',
         }
 
@@ -1821,9 +2039,15 @@ class SpotiScrape:
             params['variables'] = updated_variables_json
 
         response = self.session.get(
-            'https://api-partner.spotify.com/pathfinder/v1/query', params=params).json()
+            'https://api-partner.spotify.com/pathfinder/v1/query', params=params)
+        
+        try:
+            response = response.json()
+            return response
+        except Exception as e:
+            handle_exception(response, e, "Error retrieving Libraray Data of the autheticated user's account. Check response format.")
 
-        return response
+
 
     def are_artists_in_library(self, artistURLs):
         """
@@ -1857,17 +2081,23 @@ class SpotiScrape:
         }
 
         response = self.session.get(
-            'https://api-partner.spotify.com/pathfinder/v1/query', params=params).json()
+            'https://api-partner.spotify.com/pathfinder/v1/query', params=params)
 
-        for index in range(len(response['data']['artists'])):
-            artist_entry = {
-                '__typename': "Artist",
-                'saved': response['data']['artists'][index]['saved'],
-                'id': extract_id(artistURLs[index])
-            }
-            data['data'].append(artist_entry)
+        try:
+            response = response.json()
+            for index in range(len(response['data']['artists'])):
+                artist_entry = {
+                    '__typename': "Artist",
+                    'saved': response['data']['artists'][index]['saved'],
+                    'id': extract_id(artistURLs[index])
+                }
+                data['data'].append(artist_entry)
 
-        return data
+            return data
+        
+        except Exception as e:
+
+            handle_exception(response, e, "Error Checking If Artists are in Library. Check artist URLs or response format.")
 
     def are_tracks_in_library(self, trackURLs):
 
@@ -1902,15 +2132,24 @@ class SpotiScrape:
         }
 
         response = self.session.get(
-            'https://api-partner.spotify.com/pathfinder/v1/query', params=params).json()
+            'https://api-partner.spotify.com/pathfinder/v1/query', params=params)
 
-        for index in range(len(response['data']['tracks'])):
-            artist_entry = {
-                '__typename': "Track",
-                'saved': response['data']['tracks'][index]['saved'],
-                'id': extract_id(trackURLs[index])
-            }
-            data['data'].append(artist_entry)
+        try:
 
-        return data
+            response = response.json()
+            for index in range(len(response['data']['tracks'])):
+                artist_entry = {
+                    '__typename': "Track",
+                    'saved': response['data']['tracks'][index]['saved'],
+                    'id': extract_id(trackURLs[index])
+                }
+                data['data'].append(artist_entry)
+
+            return data
+        
+        except Exception as e:
+            
+            handle_exception(response, e, "Error Checking If Tracks are in Library. Check track URL or response format.")
+
+        
 
