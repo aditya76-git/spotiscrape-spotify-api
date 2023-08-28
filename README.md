@@ -1,74 +1,106 @@
 
 
 ![Logo](https://i.imgur.com/qtyX2iLh.png)
+<div style="text-align:center;">
+  <a href="https://github.com/aditya76-git">aditya76-git</a> /
+  <a href="https://github.com/aditya76-git/spotiscrape-spotify-api">spotiscrape-spotify-api</a>
+</div>
+
+<br />
 
 <img src="https://i.imgur.com/y3L6XfN.png" align="right" />
 
 # SpotiScrape - SPOTIFY API
-- Unlock Spotify Music Database and seamlessly access and extract music data from Spotify’s vast catalog with SpotiScrape, the ultimate API for developers and music enthusiasts.
+Unlock Spotify Music Database and seamlessly access and extract music data from Spotify’s vast catalog with SpotiScrape, the ultimate API for developers and music enthusiasts.
 
-- This Project provides a wide range of functionalities to enhance your Spotify experience. Whether you’re a developer building a music application or a music enthusiast looking for advanced features, our API has you covered.
+Access Account Information, User Details, Search Content, Manipulate Playlists, Control Player, Get Track and Playlist Information all with SpotiScrape
 
 
 
-##📋Details
+## 📋Details
 
 - 👤 ACCOUNT INFORMATION
-  - Get Account Data
+  - [Get Account Data](#get-account-data)
 - 🏠 USER LIBRARY
-  - Get Home Page Data
-  - Get Library Data
+  - [Get Home Page Data](#get-home-page-data)
+  - [Get Library Data](#get-library-data)
 - 🧑 USER
-  - Get User Profile Details
-  - Get Top Artists
-  - Get Top Tracks
-  - Get Connections (Followings or Followers)
-  - Check if artist(s) are in the user's library.
-  - Check if track(s) are in the user's library.
+  - [Get User Profile Details](#get-user-profile-details)
+  - [Get Top Artists](#get-top-artists)
+  - [Get Top Tracks](#get-top-tracks)
+  - [Get Connections (Followings or Followers)](#get-connections)
+  - [Check if artist(s) are in the user's library](#check-artists)
+  - [Check if track(s) are in the user's library](#check-tracks)
 - 🎵 TRACK
-  - Get Track Info
-  - Get Poster URL
-  - Get Recommended Tracks
-  - Get Track Metadata
-  - Get Streaming URL, PSSH, fileID of Track
-  - Get Track Credits
+  - [Get Track Info](#get-track-info)
+  - [Get Poster URL](#get-poster-url)
+  - [Get Recommended Tracks](#get-recommended-tracks)
+  - [Get Track Metadata](#get-track-metadata)
+  - [Get Streaming URL, PSSH, fileID of Track](#get-streaming-data)
+  - [Get Track Credits](#get-track-credits)
 - 🔍 SEARCH
-  - Search
+  - [Get Search Info](#get-search-info)
 - 🎶 LYRICS
-  - Get Lyrics
+  - [Get Lyrics Info](#get-lyrics-info)
 - 🎤 ARTIST
-  - Get Artist Info
-  - Get Artist Discography
-  - Follow Artist
-  - UnFollow Artist
+  - [Get Artist Info](#get-artist-info)
+  - [Get Artist Discography](#get-artist-discography)
+  - [Follow Artist](#follow-artist)
+  - [UnFollow Artist](#unfollow-artist)
 - 🎧 PLAYER
-  - Get Recently Played
-  - Get Liked Songs
-  - Add to Queue
-  - Like Song
-  - UnLike Song
-  - Play Song
-  - Pause Song
-  - Enable Repeat On Player
-  - Enable Repeat of Current Track On Player
-  - Disable Repeat On Player
-  - Enable Shuffle on Player
-  - Disable Shuffle on Player
-  - Devices
+  - [Get Recently Played](#get-recently-played)
+  - [Get Liked Songs](#get-liked-songs)
+  - [Add to Queue](#add-to-queue)
+  - [Like Song](#like-song)
+  - [UnLike Song](#unlike-song)
+  - [Play Song](#play-song)
+  - [Pause Song](#pause-song)
+  - [Enable Repeat On Player](#enable-repeat)
+  - [Enable Repeat of Current Track On Player](#enable-repeat-one)
+  - [Disable Repeat On Player](#disable-repeat)
+  - [Enable Shuffle on Player](#enable-shuffle)
+  - [Disable Shuffle on Player](#disable-shuffle)
+  - [Get Devices Info](#get-device-info)
 - 📃 PLAYLIST
-  - Get Playlist Info
-  - Move Items in Playlist
-  - Re-Order Items in Playlist
-  - Add Track to Playlist
-  - Remove Track from Playlist
-  - Pin Playlist
-  - UnPin Playlist
-  - List Public Playlists of a User
-  - Edit Playlist Details
+  - [Get Playlist Info](#get-playlist-info)
+  - [Move Items in Playlist](#move-items-in-playlist)
+  - [Re-Order Items in Playlist](#reorder-items-in-playlist)
+  - [Add Track to Playlist](#add-track-to-playlist)
+  - [Remove Track from Playlist](#remove-track-from-playlist)
+  - [Pin Playlist](#pin-playlist)
+  - [UnPin Playlist](#unpin-playlist)
+  - [List Public Playlists of a User](#list-public-playlist)
+  - [Edit Playlist Details](#edit-playlist-details)
+
+
+## ⚠️ Disclaimer
+
+Please note that the `spotiscrape` package is provided as-is and is not officially endorsed or supported by `Spotify`. While we have taken care to ensure that the package interacts with the Spotify API in a secure and compliant manner, we cannot guarantee the safety of your Spotify account.
+
+By using the `spotiscrape` package, you acknowledge and agree that you are responsible for any actions taken with your Spotify account, and you use the package at your own risk. We recommend using the package responsibly
+
+We are not liable for any potential consequences that may arise from using the `spotiscrape` package, including but not limited to `account suspension`, `data loss`, or any other `issues` related to your `Spotify` account.
+
+It's important to exercise `caution` and ensure that you keep your `sensitive information`, such as the `sp_dc` cookie, `private` and `secure`. If you have any concerns or questions, please refer to the documentation or seek assistance from the community.
 
 
 
-##🚀Initialization
+
+
+
+
+## ⚙️Installation
+
+Open your terminal or command prompt and enter the following command:
+
+
+
+```bash
+pip install git+https://github.com/aditya76-git/spotiscrape-spotify-api@main
+```
+> **Note:** To use spotiscrape you need to have a Active Spotify Account 
+
+## 🚀Initialization
 
 To get started, you need to initialize an instance of the `SpotiScrape` class by passing your Spotify DC Cookie as an argument. Make sure to replace `"YOUR_SPOTIFY_DC_COOKIE"` with your actual `Spotify DC Cookie`.
 
@@ -77,28 +109,20 @@ To get started, you need to initialize an instance of the `SpotiScrape` class by
 spotify = SpotiScrape("YOUR_SPOTIFY_DC_COOKIE")
 ```
 
-##🚀Initialization
-
-To get started, you need to initialize an instance of the `SpotiScrape` class by passing your Spotify DC Cookie as an argument. Make sure to replace `"YOUR_SPOTIFY_DC_COOKIE"` with your actual `Spotify DC Cookie`.
-
-
-```python3
-spotify = SpotiScrape("YOUR_SPOTIFY_DC_COOKIE")
-```
-
-##🔍 How to Find sp_dc cookie?
+## 🔍 How to Find sp_dc cookie?
 
 - `sp_dc` cookie is required to authenticate against `Spotify` in order to have access to the required services.
 - Using any extensions like `Cookie-Editor` can easily help you find it
 - [Extension Link - Chrome WEB Store](https://chrome.google.com/webstore/detail/cookie-editor/hlkenndednhfkekhgcdicdfddnkalmdm)
-<br/>
-<img src="https://camo.githubusercontent.com/d71ac89c29072c5e913e78900892a918030cfe9d1fe7bc1c1f9a00d59a0d39ae/68747470733a2f2f696b2e696d6167656b69742e696f2f67797a766c6177647a2f50726f6a656374732f7379726963732f6f734e587537373537485f4c70654830726650512e706e67" />
+
+![Finding the sp_dc Cookie Value](https://camo.githubusercontent.com/d71ac89c29072c5e913e78900892a918030cfe9d1fe7bc1c1f9a00d59a0d39ae/68747470733a2f2f696b2e696d6167656b69742e696f2f67797a766c6177647a2f50726f6a656374732f7379726963732f6f734e587537373537485f4c70654830726650512e706e67 "Finding the sp_dc Cookie Value")
+
 
 > **Note:** While cookies can contain sensitive information, the sp_dc cookie value is required for authentication and direct communication with the Spotify API within the scope of this open-source project. Rest assured that your sp_dc cookie will not be sent to any external server; it is solely used for interacting with Spotify's services through the project's codebase. However, caution is advised when sharing this cookie value outside the context of this project, as it could potentially lead to unauthorized access to your Spotify account.
 
 
-##👤ACCOUNT INFORMATION
-#### Get Account Data
+## 👤ACCOUNT INFORMATION
+#### <a id="get-account-data"></a>➡️ Get Account Data
 
 ```python3
 spotify.get_account_info()
@@ -107,8 +131,8 @@ spotify.get_account_info()
 
 Get Account Information of the authenticated User
 
-##🏠USER LIBRARY
-#### Get Home Page Data
+## 🏠USER LIBRARY
+#### <a id="get-home-page-data"></a>➡️ Get Home Page Data
 
 ```python3
 spotify.get_home_page_info()
@@ -116,7 +140,7 @@ spotify.get_home_page_info()
 
 Retrieves information about the user's home page.
 
-#### Get Library Data
+#### <a id="get-library-data"></a>➡️ Get Library Data
 
 ```python3
 spotify.get_library(offset=0, limit=20)
@@ -127,10 +151,11 @@ spotify.get_library(offset=0, limit=20)
 | `limit` | `int` | **Optional**. The number of tracks to retrieve. Default is 50. |20  |
 
 Get Libraray Data of the autheticated user's account.
-##🧑USER
+
+## 🧑USER
 
 
-#### Get User Profile Details
+#### <a id="get-user-profile-details"></a>➡️ Get User Profile Details
 
 ```python3
 spotify.get_user_profile_details(userURL="https://open.spotify.com/user/31m4en72cpcracygwoxaiitbr2ba", limit=10)
@@ -143,7 +168,7 @@ spotify.get_user_profile_details(userURL="https://open.spotify.com/user/31m4en72
 
 Retrieves profile details for the given user URL or authenticated user.
 
-#### Get Top Artists
+#### <a id="get-top-artists"></a>➡️ Get Top Artists
 
 ```python3
 spotify.get_top_artists(offset=0, limit=10)
@@ -156,7 +181,7 @@ spotify.get_top_artists(offset=0, limit=10)
 
 Retrieves the authenticated user's top Artists.
 
-#### Get Top Tracks
+#### <a id="get-top-tracks"></a>➡️ Get Top Tracks
 
 ```python3
 spotify.get_top_tracks(offset=0, limit=10)
@@ -169,7 +194,7 @@ spotify.get_top_tracks(offset=0, limit=10)
 
 Retrieves the authenticated user's top Tracks.
 
-#### Get Connections (Followings or Followers)
+#### <a id="get-connections"></a>➡️ Get Connections (Followings or Followers)
 
 ```python3
 spotify.get_connections(userURL="https://open.spotify.com/user/31m4en72cpcracygwoxaiitbr2ba" , type="following")
@@ -182,31 +207,35 @@ spotify.get_connections(userURL="https://open.spotify.com/user/31m4en72cpcracygw
 
 Retrieves user's connections (followings or followers).
 
-#### Check if artist(s) are in the user's library.
+#### <a id="check-artists"></a>➡️ Check if artist(s) are in the user's library.
 Check if you are following the artists or not
 
 ```python3
 spotify.are_artists_in_library(artistURLs)
 ```
-| Parameter | Type | Description | Example | Help|
+
+| Parameter | Type | Description | Example |
 | :-------- | :--- | :---------- | :--- |
-| `artistURLs` | `str` or `list` | **Required**. artistURLs of a spotify Artist. | https://link1+https://link2 or ['https://link1' , 'https://link2'] |if `str` provided the differntiate with a + else provide a `list` of artistURL|
+| `artistURLs` | `str` | **Required**. The URLs of the artists to check. If str provided then split by a + for the urls or else provide a list of artistURLs | https://link1.com/1+https://link1.com/2  |
 
 Check if artists are in the user's library.
 
-#### Check if track(s) are in the user's library.
+#### <a id="check-tracks"></a>➡️ Check if track(s) are in the user's library.
 Check if you liked the songs or not
 
 ```python3
 spotify.are_tracks_in_library(trackURLs)
 ```
-| Parameter | Type | Description | Example | Help|
+
+
+| Parameter | Type | Description | Example |
 | :-------- | :--- | :---------- | :--- |
-| `trackURLs` | `str` or `list` | **Required**. trackURLs of a spotify Artist. | https://link1+https://link2 or ['https://link1' , 'https://link2'] |if `str` provided the differntiate with a + else provide a `list` of trackURLs|
+| `trackURLs` | `str` | **Required**. The URLs of the tracks to check. If str provided then split by a + for the urls or else provide a list of artistURLs | https://link1.com/1+https://link1.com/2  |
+
 
 Check if tracks are in the user's library.
-##🎵TRACK
-#### Get Track Info
+## 🎵TRACK
+#### <a id="get-track-info"></a>➡️ Get Track Info
 
 ```python3
 spotify.get_track_info(trackURL)
@@ -218,7 +247,7 @@ spotify.get_track_info(trackURL)
 
 Retrieves information about a track from its URL.
 
-#### Get Poster URL
+#### <a id="get-poster-url"></a>➡️ Get Poster URL
 
 ```python3
 spotify.get_poster_url(trackURL)
@@ -230,7 +259,7 @@ spotify.get_poster_url(trackURL)
 
 Retrieves the poster URL for a track.
 
-#### Get Recommended Tracks
+#### <a id="get-recommended-tracks"></a>➡️ Get Recommended Tracks
 
 ```python3
 spotify.get_recommended_tracks(trackURL)
@@ -242,7 +271,7 @@ spotify.get_recommended_tracks(trackURL)
 
 Retrieves recommended tracks based on the given track URL.
 
-#### Get Track Metadata
+#### <a id="get-track-metadata"></a>➡️ Get Track Metadata
 
 ```python3
 spotify.get_track_metadata(trackURL)
@@ -254,7 +283,7 @@ spotify.get_track_metadata(trackURL)
 
 Retrieve metadata for a specific track.
 
-#### Get Streaming URL, PSSH, fileID of Track
+#### <a id="get-streaming-data"></a>➡️ Get Streaming URL, PSSH, fileID of Track
 
 ```python3
 spotify.get_streams(trackURL, format="MP4_128").fileID
@@ -269,10 +298,11 @@ spotify.get_streams(trackURL, format="MP4_128").fileID
 | Parameter | Type | Description | Example |
 | :-------- | :--- | :---------- | :--- |
 | `trackURL` | `str` | **Required**. trackURL of a spotify song. | https://open.spotify.com/track/3taCbWWTilb7eNMsAzOBq4 |
+| `format` | `str` | **Optional**. Default is MP4_128 (128Kbps Audio)| MP4_128 |
 
 Retrieve Streaming URL, PSSH, fileID of Track
 
-#### Get Track Credits
+#### <a id="get-track-credits"></a>➡️ Get Track Credits
 
 ```python3
 spotify.get_track_credits(trackURL)
@@ -284,8 +314,8 @@ spotify.get_track_credits(trackURL)
 
 Retrieves credits information for a track.
 
-#🔍SEARCH
-#### Search
+## 🔍SEARCH
+#### <a id="get-search-info"></a>➡️ Search
 
 ```python3
 spotify.search(query, filter="artists")
@@ -294,11 +324,11 @@ spotify.search(query, filter="artists")
 | Parameter | Type | Description | Example |
 | :-------- | :--- | :---------- | :--- |
 | `query` | `str` | **Required**. Query to search for | Ed Sheeran |
-| `filter` | `str` | **The type of filter to apply to the search results.**. Query to search for | artists |
+| `filter` | `str` | **Optional**. The type of filter to apply to the search results. Default is None. Can be topResults, albums, artists, episodes, genres, playlists, podcasts, audiobooks, users | artists |
 
 Searches for content on Spotify based on the provided query.
-##🎶LYRICS
-#### Get Lyrics
+## 🎶LYRICS
+#### <a id="get-lyrics-info"></a>➡️ Get Lyrics
 
 ```python3
 spotify.get_lyrics(trackURL, format="lrc")
@@ -312,8 +342,8 @@ spotify.get_lyrics(trackURL, format="lrc")
 Retrieves lyrics for a track.
 
 
-##🎤ARTIST
-#### Get Artist Info
+## 🎤ARTIST
+#### <a id="get-artist-info"></a>➡️ Get Artist Info
 
 ```python3
 spotify.get_artist_info(artistURL, filter="profile")
@@ -324,12 +354,12 @@ spotify.get_artist_info(artistURL, topTracks=True)
 | :-------- | :--- | :---------- | :--- |
 | `artistURL` | `str` | **Required**. artistURL of a Spotify Artist |https://open.spotify.com/artist/00FQb4jTyendYWaN8pK0wa  |
 | `filter` | `str` | **Optional**. Filter to narrow down the artist information. |discography, goods, profile, relatedContent, sharingInfo, stats, visuals  |
-| `topTracks` | `bool` | **Optional**. Whether to retrieve the artist's top tracks. Default is None.  |
+| `topTracks` | `bool` | **Optional**. Whether to retrieve the artist's top tracks. Default is None.  |True|
 
 Note: filter and topTracks can't be applied at the same time
 Retrieves artist information for the given artist URL.
 
-#### Get Artist Discography
+#### <a id="get-artist-discography"></a>➡️ Get Artist Discography
 
 ```python3
 spotify.get_artist_discography_all(artistURL, limit=0, offset=50)
@@ -345,7 +375,7 @@ spotify.get_artist_discography_all(artistURL, limit=0, offset=50)
 
 Retrieves the complete discography of an artist.
 
-#### Follow Artist
+#### <a id="follow-artist"></a>➡️ Follow Artist
 
 ```python3
 spotify.follow_artist(artistURL)
@@ -357,7 +387,7 @@ spotify.follow_artist(artistURL)
 
 Follow an artist.
 
-#### UnFollow Artist
+#### <a id="unfollow-artist"></a>➡️ UnFollow Artist
 
 ```python3
 spotify.unfollow_artist(artistURL)
@@ -369,8 +399,8 @@ spotify.unfollow_artist(artistURL)
 
 UnFollow an artist.
 
-##🎧PLAYER
-#### Get Recently Played
+## 🎧PLAYER
+#### <a id="get-recently-played"></a>➡️ Get Recently Played
 
 ```python3
 spotify.get_recently_played(offset=0, limit=50)
@@ -382,7 +412,7 @@ spotify.get_recently_played(offset=0, limit=50)
 
 Retrieves recently played tracks for the authenticated user.
 
-#### Get Liked Songs
+#### <a id="get-liked-songs"></a>➡️ Get Liked Songs
 
 ```python3
 spotify.get_liked_songs(offset=0, limit=50)
@@ -396,7 +426,7 @@ spotify.get_liked_songs(offset=0, limit=50)
 Retrieves liked songs for the authenticated user.
 
 
-#### Add to Queue
+#### <a id="add-to-queue"></a>➡️ Add to Queue
 
 ```python3
 spotify.add_to_queue(trackURL)
@@ -408,7 +438,7 @@ spotify.add_to_queue(trackURL)
 
 Add a track to the queue.
 
-#### Like Song
+#### <a id="like-song"></a>➡️ Like Song
 
 ```python3
 spotify.like_song(trackURL)
@@ -420,7 +450,7 @@ spotify.like_song(trackURL)
 
 Like a Song
 
-#### UnLike Song
+#### <a id="unlike-song"></a>➡️ UnLike Song
 
 ```python3
 spotify.unlike_song(trackURL)
@@ -432,7 +462,7 @@ spotify.unlike_song(trackURL)
 
 UnLike a Song
 
-#### Play Song
+#### <a id="play-song"></a>➡️ Play Song
 
 ```python3
 spotify.play_song(trackURL)
@@ -444,7 +474,7 @@ spotify.play_song(trackURL)
 
 Play a song on the player.
 
-#### Pause Song
+#### <a id="pause-song"></a>➡️ Pause Song
 
 ```python3
 spotify.pause_song(trackURL)
@@ -456,7 +486,7 @@ spotify.pause_song(trackURL)
 
 Pause a song on the player.
 
-#### Enable Repeat On Player
+#### <a id="enable-repeat"></a>➡️ Enable Repeat On Player
 
 ```python3
 spotify.enable_repeat()
@@ -465,7 +495,7 @@ spotify.enable_repeat()
 
 Enable repeating of the current context
 
-#### Enable Repeat of Current Track On Player
+#### <a id="enable-repeat-one"></a>➡️ Enable Repeat of Current Track On Player
 
 ```python3
 spotify.enable_repeat_one()
@@ -473,7 +503,7 @@ spotify.enable_repeat_one()
 
 Enable repeating of the current track.
 
-#### Disable Repeat On Player
+#### <a id="disable-repeat"></a>➡️ Disable Repeat On Player
 
 ```python3
 spotify.disable_repeat()
@@ -481,7 +511,7 @@ spotify.disable_repeat()
 
 Disable repeating.
 
-#### Enable Shuffle on Player
+#### <a id="enable-shuffle"></a>➡️ Enable Shuffle on Player
 
 ```python3
 spotify.enable_shuffle()
@@ -489,7 +519,7 @@ spotify.enable_shuffle()
 
 Enable shuffling of the current context.
 
-#### Disable Shuffle on Player
+#### <a id="disable-shuffle"></a>➡️ Disable Shuffle on Player
 
 ```python3
 spotify.disable_shuffle()
@@ -498,17 +528,26 @@ spotify.disable_shuffle()
 Disable shuffling of the current context.
 
 
-#### Devices
+#### <a id="get-device-info"></a>➡️ Devices
 
 ```python3
 spotify.devices().prev_tracks
 ```
+```python3
+spotify.devices().next_tracks
+```
+```python3
+spotify.devices().playback_speed
+```
+```python3
+spotify.devices().playback_quality
+```
 
-Get Devices Connected with the Authenticated Account. and other Information like `list`, `prev_tracks`, `next_tracks`, `playback_speed`, `playback_quality`, `SMARTPHONE_DEVICE_ID`, `COMPUTER_DEVICE_ID`, `ALL_DATA`, `PRIMARY_DEVICE_ID`, `ACTIVE_DEVICE_ID`
+Get Devices Connected with the Authenticated Account and other Information like `list`, `prev_tracks`, `next_tracks`, `playback_speed`, `playback_quality`, `SMARTPHONE_DEVICE_ID`, `COMPUTER_DEVICE_ID`, `ALL_DATA`, `PRIMARY_DEVICE_ID`, `ACTIVE_DEVICE_ID`
 
-##📃PLAYLIST
+## 📃PLAYLIST
 
-#### Get Playlist Info
+#### <a id="get-playlist-info"></a>➡️ Get Playlist Info
 
 ```python3
 spotify.get_playlist_info(playlistURL, offset=0, limit=20)
@@ -522,7 +561,7 @@ spotify.get_playlist_info(playlistURL, offset=0, limit=20)
 
 Retrieves playlist information for the given playlist URL.
 
-#### Move Items in Playlist
+#### <a id="move-items-in-playlist"></a>➡️ Move Items in Playlist
 
 ```python3
 spotify.move_items_in_playlist(playlistURL, trackURL, 5)
@@ -536,7 +575,7 @@ spotify.move_items_in_playlist(playlistURL, trackURL, 5)
 
 Move a track within a playlist to a new position.
 
-#### Re-Order Items in Playlist
+#### <a id="reorder-items-in-playlist"></a>➡️ Re-Order Items in Playlist
 
 ```python3
 spotify.reorder_items_in_playlist(playlistURL, 1, 5)
@@ -551,7 +590,7 @@ spotify.reorder_items_in_playlist(playlistURL, 1, 5)
 Reorder tracks within a playlist.
 
 
-#### Add Track to Playlist
+#### <a id="add-track-to-playlist"></a>➡️ Add Track to Playlist
 
 ```python3
 spotify.add_track_to_playlist(trackURL, playlistURL, position="TOP")
@@ -570,7 +609,7 @@ spotify.add_track_to_playlist(trackURL, playlistURL, position="BOTTOM")
 Add a track to a playlist. (TOP or BOTTOM - Defaults to TOP)
 
 
-#### Remove Track from Playlist
+#### <a id="remove-track-from-playlist"></a>➡️ Remove Track from Playlist
 
 ```python3
 spotify.remove_track_from_playlist(trackURL, playlistURL)
@@ -584,7 +623,7 @@ spotify.remove_track_from_playlist(trackURL, playlistURL)
 
 Remove a track from a playlist.
 
-#### Pin Playlist
+#### <a id="pin-playlist"></a>➡️ Pin Playlist
 
 ```python3
 spotify.pin_playlist(playlistURL)
@@ -596,7 +635,7 @@ spotify.pin_playlist(playlistURL)
 
 Pin a playlist to your library.
 
-#### UnPin Playlist
+#### <a id="unpin-playlist"></a>➡️ UnPin Playlist
 
 ```python3
 spotify.unpin_playlist(playlistURL)
@@ -608,7 +647,7 @@ spotify.unpin_playlist(playlistURL)
 
 Unpin a playlist from your library.
 
-#### List Public Playlists of a User
+#### <a id="list-public-playlist"></a>➡️ List Public Playlists of a User
 
 ```python3
 spotify.get_public_playlists(userURL="https://open.spotify.com/user/31m4en72cpcracygwoxaiitbr2ba" , offset=0, limit=10)
@@ -622,7 +661,7 @@ spotify.get_public_playlists(userURL="https://open.spotify.com/user/31m4en72cpcr
 
 Get public playlists of a user.
 
-#### Edit Playlist Details
+#### <a id="edit-playlist-details"></a>➡️ Edit Playlist Details
 
 ```python3
 spotify.edit_playlist_details(playlistURL, newTitle, newDescription="New Description Edited Using Spotiscrape")
@@ -641,7 +680,7 @@ spotify.edit_playlist_details(playlistURL, newTitle)
 
 Edit playlist details.
 
-##🌟 Show Your Support
+## 🌟 Show Your Support
 
 - If you find this project useful or interesting, please consider giving it a star on GitHub. It's a simple way to show your support and help others discover the project.
 

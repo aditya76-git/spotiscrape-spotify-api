@@ -1,0 +1,2 @@
+class SpotiScrapeError(Exception):
+    pass
